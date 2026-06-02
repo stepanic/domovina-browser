@@ -1,0 +1,67 @@
+# XcodeGen spec — izvor istine za DomovinaBrowser.xcodeproj.
+# Regeneriraj projekt s:  xcodegen generate
+#
+# .xcodeproj se NE commita (gitignoran); commita se ovaj project.yml.
+# Pravi signing (passkey/web-browser entitlement) traži da se TEAM odabere
+# u Xcode "Signing & Capabilities" tabu — ostavljamo DEVELOPMENT_TEAM prazan
+# da ga korisnik izabere, uz CODE_SIGN_STYLE = Automatic.
+
+name: DomovinaBrowser
+
+options:
+  bundleIdPrefix: ai.domovina
+  deploymentTarget:
+    macOS: "14.0"
+  createIntermediateGroups: true
+  minimumXcodeGenVersion: "2.0.0"
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    PRODUCT_NAME: DomovinaBrowser
+
+targets:
+  DomovinaBrowser:
+    type: application
+    platform: macOS
+    sources:
+      - path: DomovinaBrowser.swift
+    resources:
+      - path: AppIcon.icns
+    entitlements:
+      path: DomovinaBrowser.entitlements
+      properties:
+        # Passkey/WebAuthn za VLASTITE domene — Associated Domains (NE restricted
+        # web-browser entitlement; ne treba Appleovo odobrenje). Traži AASA file
+        # na svakoj domeni + pravi Development potpis (ad-hoc ga ne poštuje).
+        com.apple.developer.associated-domains:
+          - webcredentials:domovina.ai
+          - webcredentials:pinka.io
+        # Bluetooth za cross-device (hybrid/caBLE) passkey s telefona.
+        com.apple.security.device.bluetooth: true
+    info:
+      path: Info.plist
+      properties:
+        CFBundleName: DomovinaBrowser
+        CFBundleDisplayName: DOMOVINA Browser
+        CFBundleIconFile: AppIcon
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSMinimumSystemVersion: "14.0"
+        NSHighResolutionCapable: true
+        NSPrincipalClass: NSApplication
+        # Bluetooth prompt za cross-device (hybrid/caBLE) passkey s telefona.
+        NSBluetoothAlwaysUsageDescription: >-
+          DOMOVINA Browser koristi Bluetooth za prijavu passkeyem s tvog telefona.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ai.domovina.browser
+        CODE_SIGN_ENTITLEMENTS: DomovinaBrowser.entitlements
+        CODE_SIGN_STYLE: Automatic
+        # ITalk team.
+        DEVELOPMENT_TEAM: "6SCK58757K"
+        ENABLE_HARDENED_RUNTIME: true
+        INFOPLIST_FILE: Info.plist
+        COMBINE_HIDPI_IMAGES: true

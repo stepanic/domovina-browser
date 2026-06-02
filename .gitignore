@@ -3,3 +3,11 @@
 *.o
 *.swiftmodule
 .DS_Store
+
+# XcodeGen-generated (izvor istine je project.yml)
+*.xcodeproj/
+Info.plist
+DomovinaBrowser.entitlements
+*.xcworkspace/
+xcuserdata/
+DerivedData/

@@ -26,7 +26,7 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleDisplayName</key>     <string>DOMOVINA Browser</string>
   <key>CFBundleExecutable</key>      <string>DomovinaBrowser</string>
   <key>CFBundleIconFile</key>        <string>AppIcon</string>
-  <key>CFBundleIdentifier</key>      <string>link.domovina.browser</string>
+  <key>CFBundleIdentifier</key>      <string>ai.domovina.browser</string>
   <key>CFBundleVersion</key>         <string>1</string>
   <key>CFBundleShortVersionString</key> <string>1.0</string>
   <key>CFBundlePackageType</key>     <string>APPL</string>

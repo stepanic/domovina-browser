@@ -52,7 +52,11 @@ Safari → jednako lagan, bez drugog Chromiuma. Trade-off: nema Chrome extension
 ## 5. Što je izgrađeno
 
 - **Jedan Swift file** (`DomovinaBrowser.swift`), SwiftUI + `WKWebView`.
-- **Build bez Xcode-a** — `./build.sh` je samo `swiftc` + ručni `.app` bundle + ad-hoc potpis.
+- **Build bez Xcode-a** — `./build.sh` je samo `swiftc` + ručni `.app` bundle + ad-hoc potpis
+  (dovoljno za trajnu lokalnu instalaciju; sve radi osim passkeya, vidi §7).
+- **Xcode projekt** (za pravi potpis/passkey) generira se iz [`project.yml`](../project.yml)
+  s `xcodegen generate` — `.xcodeproj`/`Info.plist`/`.entitlements` su gitignorani jer
+  je `project.yml` izvor istine.
 - **Tvrdi cap na tabove** — `MAX_TABS` (default `7`); "+" se disabla na maksimumu.
 - Adresna traka radi i kao Google pretraga; back/forward/reload; swipe geste.
 - Tipkovnica: `⌘T` novi tab, `⌘W` zatvori, `⌘R` osvježi.
@@ -74,26 +78,48 @@ Brand tokeni: navy `#002F6C`, red `#FF0000`, white. Stripe red→white→navy.
   `sips`/`iconutil` → `AppIcon.icns`. Prati isti template kao ostali sub-brandovi
   (`domovina_<ime>_logo_square`).
 
-## 7. Passkey / WebAuthn — Apple gate (NIJE bug u kodu)
+## 7. Passkey / WebAuthn — dva puta (i koji smo odabrali)
 
-Passkey za **proizvoljne** domene zahtijeva restricted entitlement
-`com.apple.developer.web-browser`. Apple ga dodjeljuje **samo browserima** i traži:
+Postoje dva odvojena načina da passkey radi u `WKWebView`-u — gate ovisi o tome za
+**koje domene** ga treba:
 
-1. plaćeni Apple Developer Program ($99/god),
-2. odobren "Default Web Browser" capability,
-3. potpis Developer ID-em s provisioning profilom koji ga sadrži.
+| | **Associated Domains** (odabrano) | **Web Browser entitlement** |
+|---|---|---|
+| Za koje domene | samo **vlastite** (`domovina.ai`, `pinka.io`) | bilo koji site na internetu |
+| Apple ručno odobrenje | **NE** | DA (restricted) |
+| Entitlement | `com.apple.developer.associated-domains` | `…web-browser.public-key-credential` |
+| Uvjet | AASA file na svakoj domeni + RP ID = domena | Appleovo odobrenje |
 
-**Ad-hoc lokalni build taj entitlement ignorira** → passkey neće raditi dok se ne
-potpiše pravim ID-em. Cross-device flow (telefon preko Bluetootha) dodatno treba BT
-dozvolu.
+**Zašto je WKWebView uopće gated:** anti-phishing — bez entitlementa bilo koja app
+mogla bi ubaciti nevidljivi webview i pokupiti passkey. Apple zato `navigator.credentials`
+u `WKWebView`-u dopušta samo (a) odobrenim browserima za sve domene, ili (b) appovima
+za **njihove vlastite** associated domene.
 
-Sve je već ožičeno i čeka dev account:
-- [`DomovinaBrowser.entitlements`](../DomovinaBrowser.entitlements) — `web-browser` + `device.bluetooth`
-- `NSBluetoothAlwaysUsageDescription` u Info.plistu (BT prompt)
-- `SIGN_ID` signing flow u [`build.sh`](../build.sh):
-  ```bash
-  SIGN_ID="Developer ID Application: Tvoje Ime (TEAMID)" ./build.sh
-  ```
+**Odluka:** trebaju nam samo `domovina.ai` i `pinka.io` (vlastiti servisi) → idemo
+Associated Domains putem, bez Appleovog odobrenja. Restricted browser entitlement bismo
+trebali samo da želimo biti univerzalni browser za cijeli internet (ili bismo morali
+mijenjati engine na Chromium/Gecko — što ubija lagani WebKit pristup, vidi §2).
+
+Uvjeti da proradi (svi u našim rukama):
+
+1. **AASA file** na svakoj domeni, HTTPS, bez redirecta, `Content-Type: application/json`:
+   `https://domovina.ai/.well-known/apple-app-site-association` (i isto za `pinka.io`)
+   ```json
+   { "webcredentials": { "apps": ["6SCK58757K.ai.domovina.browser"] } }
+   ```
+   (sadržaj živi u [`docs/apple-app-site-association`](apple-app-site-association))
+2. **Relying Party ID** na stranici = točno ta domena.
+3. **Pravi Development potpis** (ITalk team `6SCK58757K`) — ad-hoc NE poštuje ovaj
+   managed entitlement; treba provisioning profil koji ga sadrži. Xcode to stvori
+   automatski uz "Automatically manage signing".
+
+Caveat: passkey-u-WKWebView dobro je dokumentiran za iOS; na macOS-u je sivo područje
+→ testira se na stvarnoj stranici, fallback je native `ASAuthorization` flow.
+
+Ožičeno (sve preko [`project.yml`](../project.yml), xcodegen generira ostalo):
+- `com.apple.developer.associated-domains` (oba `webcredentials:`) + `device.bluetooth`
+- `NSBluetoothAlwaysUsageDescription` u Info.plistu (cross-device passkey s telefona)
+- Bundle: `ai.domovina.browser`; signing: Automatic, team ITalk `6SCK58757K`
 
 ## 8. Bonus nalaz: pravi uzrok RAM pritiska
 
