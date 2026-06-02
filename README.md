@@ -74,6 +74,11 @@ SIGN_ID="Developer ID Application: Tvoje Ime (TEAMID)" ./build.sh
 Ad-hoc lokalni build **ne** poštuje taj entitlement → passkey neće raditi dok
 se ne potpiše pravim ID-em. To je Apple gate, ne nedostatak u kodu.
 
+## Pozadina
+
+Zašto projekt postoji, usporedba alternativa, odluke i nalazi —
+vidi [`docs/POZADINA.md`](docs/POZADINA.md).
+
 ## Licenca
 
 MIT — vidi [LICENSE](LICENSE).
