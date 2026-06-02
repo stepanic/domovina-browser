@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!--
+    PASSKEY / WebAuthn za proizvoljne domene.
+    Ovaj entitlement Apple dodjeljuje SAMO browserima i RESTRICTED je:
+    treba plaćeni Apple Developer account + odobrenje "Default Web Browser"
+    capabilitya + potpis provisioning profilom koji ga sadrži.
+    Ad-hoc potpis (codesign -s -) ga NE poštuje — passkey neće raditi dok
+    se ne potpiše pravim Developer ID-em s ovim grantom.
+  -->
+  <key>com.apple.developer.web-browser</key>
+  <true/>
+
+  <!-- Bluetooth za cross-device (hybrid/caBLE) passkey flow s telefona. -->
+  <key>com.apple.security.device.bluetooth</key>
+  <true/>
+</dict>
+</plist>

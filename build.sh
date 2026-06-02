@@ -33,12 +33,25 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>NSPrincipalClass</key>        <string>NSApplication</string>
   <key>NSHighResolutionCapable</key> <true/>
   <key>LSMinimumSystemVersion</key>  <string>14.0</string>
+  <!-- Potrebno da macOS dopusti Bluetooth (cross-device passkey s telefona). -->
+  <key>NSBluetoothAlwaysUsageDescription</key>
+  <string>DOMOVINA Browser koristi Bluetooth za prijavu passkeyem s tvog telefona.</string>
 </dict>
 </plist>
 PLIST
 
-# Ad-hoc potpis da macOS dopusti pokretanje lokalnog builda.
-codesign --force --sign - "$APP" >/dev/null 2>&1 || true
+# Potpis. Za passkey/WebAuthn treba PRAVI Developer ID s odobrenim
+# `com.apple.developer.web-browser` entitlementom — postavi ga preko:
+#   SIGN_ID="Developer ID Application: Ime (TEAMID)" ./build.sh
+# Bez toga je ad-hoc potpis (app radi, ali passkey za proizvoljne domene neće).
+if [ -n "$SIGN_ID" ]; then
+  echo "Signing s entitlementima ($SIGN_ID)…"
+  codesign --force --options runtime \
+    --entitlements DomovinaBrowser.entitlements \
+    --sign "$SIGN_ID" "$APP"
+else
+  codesign --force --sign - "$APP" >/dev/null 2>&1 || true
+fi
 
 echo "Done → $APP"
 echo "Pokreni s:  open \"$APP\""

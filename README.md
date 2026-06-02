@@ -54,6 +54,26 @@ let HOME = "https://www.google.com"
 - Bez Chrome extensiona — `WKWebView` ih ne podržava.
 - Bez bookmarka, historyja, sync-a, postavki. To su "kerefeke" koje ovaj browser nema.
 
+## Passkey / WebAuthn
+
+Passkey za proizvoljne web stranice zahtijeva restricted Apple entitlement
+`com.apple.developer.web-browser` — Apple ga dodjeljuje **samo browserima** i
+treba:
+
+1. plaćeni Apple Developer Program ($99/god),
+2. odobren "Default Web Browser" capability,
+3. potpis Developer ID-em s provisioning profilom koji ga sadrži.
+
+Sve je već ožičeno ([`DomovinaBrowser.entitlements`](DomovinaBrowser.entitlements),
+Bluetooth usage string, signing flow). Kad imaš identitet:
+
+```bash
+SIGN_ID="Developer ID Application: Tvoje Ime (TEAMID)" ./build.sh
+```
+
+Ad-hoc lokalni build **ne** poštuje taj entitlement → passkey neće raditi dok
+se ne potpiše pravim ID-em. To je Apple gate, ne nedostatak u kodu.
+
 ## Licenca
 
 MIT — vidi [LICENSE](LICENSE).
