@@ -37,7 +37,8 @@ targets:
         # web-browser entitlement; ne treba Appleovo odobrenje). Traži AASA file
         # na svakoj domeni + pravi Development potpis (ad-hoc ga ne poštuje).
         com.apple.developer.associated-domains:
-          - webcredentials:domovina.ai
+          - webcredentials:domovina.ai      # apex
+          - webcredentials:*.domovina.ai    # sve subdomene (wallet, app, …) — svaka treba svoj AASA
           - webcredentials:pinka.io
         # Bluetooth za cross-device (hybrid/caBLE) passkey s telefona.
         com.apple.security.device.bluetooth: true
